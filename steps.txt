@@ -1,0 +1,6 @@
+1. dotnet add package MongoDB.Driver
+2. dotnet add package MongoDB.Bson
+3. db.latlong.insert({Temperature:"100F",Latitude:"1212323.232323", Longitude:"3453453242.234342",CustomString1:"test1",CustomString2:"test2",CustomString3:"test3"});
+4. dotnet publish -c Release -r win10-x86
+5. dotnet add package CommandLineParser --version 2.8.0
+6. 
