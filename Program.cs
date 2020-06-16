@@ -38,6 +38,36 @@ namespace MongoConnect
                                }
                            }                       
                        }
+                       else if(o.IsBulkUpdate)
+                       {                             
+                           Console.WriteLine("Enter the number of batches: ");
+                           int NoOfBatches = Convert.ToInt32(Console.ReadLine());
+                           Console.WriteLine("Enter the number of records per batch: ");
+                           int NoOfRecordsPerBatch = Convert.ToInt32(Console.ReadLine());   
+                           for (int i = 0; i < NoOfBatches; i++)
+                           {
+                               bool updateRes = mongoRepo.UpdateBulk(NoOfRecordsPerBatch);
+                               if(updateRes)
+                               {
+                                   Console.WriteLine("Batch "+ (i+1) + " updated successfully");
+                               }
+                           }                       
+                       }
+                       else if(o.IsBulkReplace)
+                       {                             
+                           Console.WriteLine("Enter the number of batches: ");
+                           int NoOfBatches = Convert.ToInt32(Console.ReadLine());
+                           Console.WriteLine("Enter the number of records per batch: ");
+                           int NoOfRecordsPerBatch = Convert.ToInt32(Console.ReadLine());   
+                           for (int i = 0; i < NoOfBatches; i++)
+                           {
+                               bool updateRes = mongoRepo.ReplaceBulk(NoOfRecordsPerBatch);
+                               if(updateRes)
+                               {
+                                   Console.WriteLine("Batch "+ (i+1) + " updated successfully");
+                               }
+                           }                       
+                       }                                                
                        else if (o.Verbose)
                        {
                            Console.WriteLine("--h Help");

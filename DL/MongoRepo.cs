@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using models;
 using MongoDB.Driver;
 
@@ -12,10 +13,18 @@ namespace DL
 
         public void Connect()
         {
-            string conStr = "mongodb://localhost:27017/";
-            var client = new MongoClient(conStr);
-            var database = client.GetDatabase("gps");
-            _coords = database.GetCollection<LatLong>("latlong");
+            try
+            {
+                string conStr = "mongodb://localhost:27017/";
+                //string conStr = "mongodb://admin:root123@gpscluster-kkld7.mongodb.net:27017/";
+                var client = new MongoClient(conStr);
+                var database = client.GetDatabase("gps");
+                _coords = database.GetCollection<LatLong>("latlong");
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public void Get(int seconds)
@@ -102,5 +111,112 @@ namespace DL
             timer.Stop();
             return Updated;
         }
+
+        public bool UpdateBulk(int BatchSize)
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            bool Updated = false;
+            try
+            {
+                var builder = Builders<LatLong>.Filter;
+                var filterDef = builder.And(builder.Ne(l => l.Latitude, "0"), builder.Ne(l => l.Longitude, "0"));
+                var updateDef = Builders<LatLong>.Update.Set(l => l.Latitude, "0").Set(l => l.Longitude , "0");
+                var records = _coords.Find(filterDef).Limit(BatchSize).ToList();
+
+                var bulkOps = new List<WriteModel<LatLong>>();
+                foreach (var record in records)
+                {
+                    var upsertOne = new UpdateOneModel<LatLong>(filterDef, updateDef) 
+                    {
+                         IsUpsert = true
+                    };
+                    bulkOps.Add(upsertOne);
+                }
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");               
+                _coords.BulkWrite(bulkOps);                
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);                
+            }
+            timer.Stop();
+            return Updated;
+        }
+
+        public bool ReplaceBulk(int BatchSize)
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            bool Updated = false;
+            try
+            {
+                var builder = Builders<LatLong>.Filter;
+                var filterDef = builder.And(builder.Ne(l => l.Latitude, "0"), builder.Ne(l => l.Longitude, "0"));
+                var updateDef = Builders<LatLong>.Update.Set(l => l.Latitude, "0").Set(l => l.Longitude , "0");
+                var records = _coords.Find(filterDef).Limit(BatchSize).ToList();
+
+                var bulkOps = new List<WriteModel<LatLong>>();
+                foreach (var record in records)
+                {
+                    record.Latitude = "0";
+                    record.Longitude = "0";
+                    var upsertOne = new ReplaceOneModel<LatLong>(
+                        Builders<LatLong>.Filter.Where(l => l.Id == record.Id),
+                        record) 
+                    {
+                         IsUpsert = true
+                    };
+                    bulkOps.Add(upsertOne);
+                }
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");               
+                _coords.BulkWrite(bulkOps);                
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);                
+            }
+            timer.Stop();
+            return Updated;
+        }
+
+        public bool UpdateMany(int BatchSize)
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            bool Updated = false;
+            try
+            {
+                var builder = Builders<LatLong>.Filter;
+                var filterDef = builder.And(builder.Ne(l => l.Latitude, "0"), builder.Ne(l => l.Longitude, "0"));
+                var updateDef = Builders<LatLong>.Update.Set(l => l.Latitude, "0").Set(l => l.Longitude , "0");
+                var records = _coords.Find(filterDef).Limit(BatchSize).ToList();
+
+                var bulkOps = new List<WriteModel<LatLong>>();
+                foreach (var record in records)
+                {
+                    record.Latitude = "0";
+                    record.Longitude = "0";
+                    var upsertOne = new ReplaceOneModel<LatLong>(
+                        Builders<LatLong>.Filter.Where(l => l.Id == record.Id),
+                        record) 
+                    {
+                         IsUpsert = true
+                    };
+                    bulkOps.Add(upsertOne);
+                }
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");               
+                //_coords.UpdateMany(recodrs, filterDef, updateDef);
+                Console.WriteLine("Time taken: " + timer.Elapsed.TotalSeconds + " seconds");                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);                
+            }
+            timer.Stop();
+            return Updated;
+        }        
     }
 }

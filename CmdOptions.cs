@@ -11,7 +11,13 @@ namespace MongoConnect
         public int InsSeconds { get; set; }
 
         [Option('u', "update", HelpText = "Update Records per batch.")]
-        public bool IsUpdate { get; set; }        
+        public bool IsUpdate { get; set; }   
+
+        [Option('b', "bulkupdate", HelpText = "Update Records per batch.")]
+        public bool IsBulkUpdate { get; set; }  
+
+        [Option('r', "bulkreplace", HelpText = "Update Records per batch.")]
+        public bool IsBulkReplace { get; set; }                   
 
         [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
         public bool Verbose { get; set; }
